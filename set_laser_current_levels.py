@@ -1,32 +1,69 @@
 #!/usr/bin/env python
 
-import socket
-from socket import AF_INET, SOCK_DGRAM
+"""
+Sets laser current levels via UDP
+"""
+
+from socket import socket, AF_INET, SOCK_DGRAM
 from struct import pack, calcsize
+import argparse
+import sys
 
 # Send to the UDP protocol port
 UDP_PORT = 21074
 
 # Send the laser diodes current level datagrams to the address
-dest = "127.0.0.1"
+DEST_ADDR = "127.0.0.1"
 
 # Contants
 MAGIC = 0xD10D
 VERSION = 0x0100
 
+parser = argparse.ArgumentParser(description="Set laser current levels")
+parser.add_argument(
+    "--angld1", default=0, type=int, help="Angular LD1 current level code"
+)
+parser.add_argument(
+    "--angld2", default=0, type=int, help="Angular LD2 current level code"
+)
+parser.add_argument(
+    "--linld1", default=0, type=int, help="Linear LD1 current level code"
+)
+parser.add_argument(
+    "--linld2", default=0, type=int, help="Linear LD2 current level code"
+)
+parser.add_argument(
+    "--focld1", default=0, type=int, help="Focal LD1 current level code"
+)
+parser.add_argument(
+    "--focld2", default=0, type=int, help="Focal LD2 current level code"
+)
+args = parser.parse_args()
+
 # The UDP diagram payload has data fields described in struct format
-payload_fmt = '>8H'
-size = calcsize(payload_fmt)
+PAYLOAD_FMT = ">8H"
+size = calcsize(PAYLOAD_FMT)
 
-# Payload data fields has constants and laser diode current level codes. 
-angld1, angld2, linld1, linld2, focld1, focld2 = 1000, 0, 1000, 0, 1000, 0
-
-# Returns a bytes object
-packet = pack(payload_fmt, MAGIC, VERSION, angld1,
-angld2, linld1, linld2, focld1, focld2)
+# Values must be representable as 'unsigned short'
+try:
+    # Returns a bytes object
+    packet = pack(
+        PAYLOAD_FMT,
+        MAGIC,
+        VERSION,
+        args.angld1,
+        args.angld2,
+        args.linld1,
+        args.linld2,
+        args.focld1,
+        args.focld2,
+    )
+except ValueError:
+    print("Negative values are not allowed", file=sys.stderr)
+    sys.exit(1)
 
 # Create a socket object
-s = socket.socket(family=AF_INET, type=SOCK_DGRAM, proto=0)
+s = socket(family=AF_INET, type=SOCK_DGRAM, proto=0)
 
 # Sends laser diodes current level broadcast protocol datagrams
-s.sendto(packet,(dest, UDP_PORT))
+s.sendto(packet, (DEST_ADDR, UDP_PORT))
