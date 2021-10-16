@@ -13,7 +13,7 @@ import sys
 UDP_PORT = 21074
 
 # Send the laser diodes current level datagrams to the address
-DEST_ADDR = "127.0.0.1"
+DEFAULT_DEST_ADDR = "127.0.0.1"
 
 # Contants
 MAGIC = 0xD10D
@@ -38,6 +38,15 @@ parser.add_argument(
 parser.add_argument(
     "--focld2", default=0, type=int, help="Focal LD2 current level code"
 )
+parser.add_argument(
+    "addr",
+    nargs="?",
+    default=DEFAULT_DEST_ADDR,
+    type=str,
+    metavar="ADDR",
+    help="Destination address",
+)
+
 args = parser.parse_args()
 
 # The UDP diagram payload has data fields described in struct format
@@ -66,4 +75,4 @@ except ValueError:
 s = socket(family=AF_INET, type=SOCK_DGRAM, proto=0)
 
 # Sends laser diodes current level broadcast protocol datagrams
-s.sendto(packet, (DEST_ADDR, UDP_PORT))
+s.sendto(packet, (args.addr, UDP_PORT))
