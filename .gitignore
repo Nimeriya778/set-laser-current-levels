@@ -1,0 +1,5 @@
+/afs-model-work/
+/dist/
+/venv/
+__pycache__
+*.egg-info
