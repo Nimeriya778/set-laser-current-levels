@@ -1,0 +1,17 @@
+variables:
+    RELEASE_NAME: "${CI_PROJECT_NAME}-${CI_COMMIT_REF_SLUG}-g${CI_COMMIT_SHORT_SHA}-b${CI_PIPELINE_ID}"
+
+default:
+    tags:
+      - linux-docker
+
+image: ${PLG_CI_DOCKER_TAG}/rusty-python:latest
+
+dist:
+    stage: build
+    script:
+      - python3 -m build
+    artifacts:
+        name: "${RELEASE_NAME}"
+        paths:
+          - dist
